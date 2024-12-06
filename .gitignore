@@ -1,0 +1,38 @@
+/NomQuest/.env
+/NomQuest/src/firebase/firebaseConfig.jsx
+
+#### TO BE DELETED
+NOTES.md
+App.css
+/NomQuest/src/pages/DefaultPage.jsx
+/NomQuest/public/favicon.svg
+/NomQuest/public/react_favicon.svg
+/NomQuest/src/assets/react.svg
+
+####
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+dev-dist
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
