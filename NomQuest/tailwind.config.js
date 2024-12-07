@@ -23,7 +23,11 @@ export default {
         dark: '#263717',
         earth: '#d29d5a',
         lava: '#613422',
-        white: '#fefff1',
+        white: {
+          DEFAULT: '#fefff1',
+          dark: '#F6F6F4',
+          light: '#F8F8F7',
+        },
         danger: '#9f2f2f',
         success: '#9ACD32',
         info: '#00008B',

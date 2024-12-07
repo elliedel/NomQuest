@@ -21,7 +21,6 @@ export const fetchStores = async () => {
         throw new Error("Failed to fetch stores");
     }
 };
-
 export const addStore = async (newStore) => {
     try {
         const storeRef = await addDoc(collection(db, "stores"), {
@@ -34,7 +33,6 @@ export const addStore = async (newStore) => {
         throw new Error('Failed to add store');
     }
 };
-
 export const updateStore = async (store) => {
     try {
         const storeRef = doc(db, 'stores', store.id);
@@ -44,7 +42,6 @@ export const updateStore = async (store) => {
         throw new Error('Failed to update store');
     }
 };
-
 export const deleteStore = async (storeId) => {
     try {
         const storeRef = doc(db, 'stores', storeId);
@@ -54,3 +51,4 @@ export const deleteStore = async (storeId) => {
         throw new Error('Failed to delete store');
     }
 };
+

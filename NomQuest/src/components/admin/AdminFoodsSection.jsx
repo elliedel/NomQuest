@@ -1,91 +1,197 @@
-import React, { useState } from 'react';
-import ArrowDropDownRoundedIcon from '@mui/icons-material/ArrowDropDownRounded';
+import React, { useState } from "react";
 
 const AdminFoodsSection = () => {
-    const [activeTab, setActiveTab] = useState("Food Item");
-    const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("Food Item");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedItems, setSelectedItems] = useState([]);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-    const handleTabClick = (tabName) => {
-        setActiveTab(tabName);
-        setIsDropdownOpen(false); // Close dropdown when a tab is selected
-    };
+  const tabs = ["Food Item", "Store Item", "Price"];
 
-    const toggleDropdown = () => {
-        setIsDropdownOpen(!isDropdownOpen);
-    };
+  const sampleData = {
+    "Food Item": [
+      { id: 1, name: "Sample Food Item", category: "Main Course" },
+      { id: 2, name: "Another Food Item", category: "Dessert" },
+    ],
+    "Store Item": [
+      { id: 1, name: "Sample Store", location: "City Center" },
+      { id: 2, name: "Another Store", location: "Downtown" },
+    ],
+    Price: [
+      { id: 1, name: "Sample Item", price: "$9.99" },
+      { id: 2, name: "Another Item", price: "$4.99" },
+    ],
+  };
 
-    return (
-        <div className="min-h-full bg-white p-6">
-            <div className="text-center">
-                <h2 className="text-2xl font-bold text-primary mb-6">Manage Foods</h2>
-                
-                {/* Tabs for larger screens */}
-                <div className="hidden md:flex justify-center space-x-4 mb-6 border-b border-gray-300">
-                    {["Food Item", "Store Item", "Price"].map((tab) => (
-                        <button
-                            key={tab}
-                            onClick={() => handleTabClick(tab)}
-                            className={`px-4 py-2 font-semibold ${
-                                activeTab === tab ? "text-primary border-b-2 border-primary" : "text-gray-600"
-                            }`}
-                        >
-                            {tab}
-                        </button>
-                    ))}
-                </div>
+  const data = sampleData[activeTab];
 
-                {/* Dropdown for mobile view */}
-                <div className="md:hidden relative mb-6">
-                    <button
-                        onClick={toggleDropdown}
-                        className="w-full flex justify-between px-4 py-2 text-gray-600 bg-gray-100 border border-gray-300 rounded-md text-left"
-                    >
-                        {activeTab}<span><ArrowDropDownRoundedIcon /></span>
-                    </button>
-                    {isDropdownOpen && (
-                        <div className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded-md shadow-md z-10">
-                            {["Food Item", "Store Item", "Price"].map((tab) => (
-                                <button
-                                    key={tab}
-                                    onClick={() => handleTabClick(tab)}
-                                    className={`w-full text-left px-4 py-2 ${
-                                        activeTab === tab ? "bg-gray-100 text-primary" : "text-gray-600"
-                                    }`}
-                                >
-                                    {tab}
-                                </button>
-                            ))}
-                        </div>
-                    )}
-                </div>
+  const handleTabClick = (tabName) => {
+    setActiveTab(tabName);
+    setSearchTerm("");
+    setSelectedItems([]);
+    setIsDropdownOpen(false);
+  };
 
-                {/* Tab Content */}
-                <div className="p-4">
-                    {activeTab === "Food Item" && (
-                        <div>
-                            <h3 className="text-xl font-semibold mb-4">Food Items</h3>
-                            {/* Add your table or list for food items here */}
-                            <p>List or table of food items goes here.</p>
-                        </div>
-                    )}
-                    {activeTab === "Store Item" && (
-                        <div>
-                            <h3 className="text-xl font-semibold mb-4">Store Items</h3>
-                            {/* Add your table or list for store items here */}
-                            <p>List or table of store items goes here.</p>
-                        </div>
-                    )}
-                    {activeTab === "Price" && (
-                        <div>
-                            <h3 className="text-xl font-semibold mb-4">Prices</h3>
-                            {/* Add your table or list for prices here */}
-                            <p>List or table of prices goes here.</p>
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
+  const handleSelectItem = (id) => {
+    setSelectedItems((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
+  };
+
+  const handleSelectAll = (e) => {
+    setSelectedItems(e.target.checked ? data.map((item) => item.id) : []);
+  };
+
+  const handleDeleteSelected = () => {
+    console.log("Deleting selected items:", selectedItems);
+    setSelectedItems([]);
+  };
+
+  const filteredData = data.filter((item) =>
+    item.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const renderTableContent = () => (
+    <div className="bg-white shadow overflow-hidden rounded-lg">
+      <div className="flex justify-between items-center mb-4 p-4">
+        
+        <div className="flex items-center space-x-2">
+          <input
+            type="checkbox"
+            checked={data.length > 0 && selectedItems.length === data.length}
+            onChange={handleSelectAll}
+            className="form-checkbox"
+          />
+          <span className="text-gray-600">Select All</span>
+        </div>
+        <div className="relative">
+            <input
+            type="text"
+            placeholder={`Search ${activeTab.toLowerCase()}s`}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-8 pr-4 py-2 border rounded-md w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            {selectedItems.length > 0 && (
+            <button
+                onClick={handleDeleteSelected}
+                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md"
+            >
+                Delete {selectedItems.length} Selected
+            </button>
+            )}
+        </div>
+      </div>
+
+      <table className="min-w-full divide-y divide-gray-200">
+        <thead className="bg-gray-100">
+          <tr>
+            <th className="px-6 py-3">
+              <span className="sr-only">Select</span>
+            </th>
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+              Name
+            </th>
+            {activeTab === "Food Item" && (
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                Category
+              </th>
+            )}
+            {activeTab === "Store Item" && (
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                Location
+              </th>
+            )}
+            {activeTab === "Price" && (
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+                Price
+              </th>
+            )}
+            <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
+              Actions
+            </th>
+          </tr>
+        </thead>
+        <tbody className="bg-white divide-y divide-gray-200">
+          {filteredData.length > 0 ? (
+            filteredData.map((item) => (
+              <tr key={item.id} className="hover:bg-gray-100">
+                <td className="px-6 py-4">
+                  <input
+                    type="checkbox"
+                    checked={selectedItems.includes(item.id)}
+                    onChange={() => handleSelectItem(item.id)}
+                    className="form-checkbox"
+                  />
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">{item.name}</td>
+                {activeTab === "Food Item" && (
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {item.category}
+                  </td>
+                )}
+                {activeTab === "Store Item" && (
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {item.location}
+                  </td>
+                )}
+                {activeTab === "Price" && (
+                  <td className="px-6 py-4 whitespace-nowrap">{item.price}</td>
+                )}
+                <td className="px-6 py-4 whitespace-nowrap space-x-2">
+                  <button className="text-blue-600 hover:text-blue-900">
+                    Edit
+                  </button>
+                  <button className="text-red-600 hover:text-red-900">
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td
+                colSpan={activeTab === "Food Item" ? 4 : 3}
+                className="px-6 py-4 text-center text-gray-500"
+              >
+                No {activeTab.toLowerCase()}s found
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen p-6">
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-3xl font-bold text-gray-800 mb-8 text-center">
+          Manage Foods
+        </h2>
+
+        {/* Tabs */}
+        <div className="flex justify-center space-x-4 mb-8 border-b-2 border-gray-300">
+          {tabs.map((tab) => (
+            <button
+              key={tab}
+              onClick={() => handleTabClick(tab)}
+              className={`px-4 py-2 transition ${
+                activeTab === tab
+                  ? "text-primary border-b-2 border-earth"
+                  : "text-primary hover:font-semibold"
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+
+        {/* Tab Content */}
+        {renderTableContent()}
+      </div>
+    </div>
+  );
 };
 
 export default AdminFoodsSection;

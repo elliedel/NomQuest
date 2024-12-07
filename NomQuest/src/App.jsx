@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { AuthProvider, useAuth } from "./firebase/AuthContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import Toast from "./components/Toast";
+import Footer from "./components/Footer";
 import HomePage from "./pages/HomePage";
 import AdminPage from "./pages/admin/AdminPage";
 import SignIn from "./pages/auth/SignIn";
@@ -49,6 +50,7 @@ function App() {
               }
             />
           </Routes>
+          <Footer />
         </Router>
       </AuthProvider>
     </>

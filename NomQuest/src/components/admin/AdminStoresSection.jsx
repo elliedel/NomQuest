@@ -1,11 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { fetchStores, addStore, updateStore, deleteStore } from '../../firebase/adminCrud';
 import AddStoreModal from './AddStoreModal';
-import AddBusinessIcon from '@mui/icons-material/AddBusiness';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import SearchIcon from '@mui/icons-material/Search';
-
 
 const AdminStoresSection = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -14,12 +9,11 @@ const AdminStoresSection = () => {
     const [selectedStores, setSelectedStores] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
 
-    // Load stores from Firestore when component mounts
     useEffect(() => {
         const loadStores = async () => {
             try {
                 const storeData = await fetchStores();
-                setStores(storeData);  // Set the stores to state
+                setStores(storeData);
             } catch (error) {
                 console.error("Error fetching stores:", error);
             }
@@ -30,7 +24,7 @@ const AdminStoresSection = () => {
     const handleAddStore = async (newStore) => {
         try {
             const addedStore = await addStore(newStore);
-            setStores([...stores, addedStore]);  // Add the new store to the list
+            setStores([...stores, addedStore]);
         } catch (error) {
             console.error("Error adding store:", error);
         }
@@ -38,13 +32,15 @@ const AdminStoresSection = () => {
 
     const handleEditStore = (store) => {
         setEditingStore(store);
-        setIsModalOpen(true);  // Open modal for editing store
+        setIsModalOpen(true);
     };
 
     const handleUpdateStore = async (updatedStore) => {
         try {
             await updateStore(updatedStore);
-            setStores(stores.map(store => store.id === updatedStore.id ? updatedStore : store));  // Update store in state
+            setStores(stores.map(store => 
+                store.id === updatedStore.id ? updatedStore : store
+            ));
         } catch (error) {
             console.error("Error updating store:", error);
         }
@@ -53,7 +49,7 @@ const AdminStoresSection = () => {
     const handleDeleteStore = async (storeId) => {
         try {
             await deleteStore(storeId);
-            setStores(stores.filter(store => store.id !== storeId));  // Remove store from state
+            setStores(stores.filter(store => store.id !== storeId));
         } catch (error) {
             console.error("Error deleting store:", error);
         }
@@ -61,146 +57,162 @@ const AdminStoresSection = () => {
 
     const handleDeleteSelectedStores = async () => {
         try {
-            await Promise.all(selectedStores.map(storeId => deleteStore(storeId)));
-            setStores(stores.filter(store => !selectedStores.includes(store.id)));  // Remove selected stores
-            setSelectedStores([]);  // Clear selection after deletion
+            await Promise.all(selectedStores.map(deleteStore));
+            setStores(stores.filter(store => !selectedStores.includes(store.id)));
+            setSelectedStores([]);
         } catch (error) {
             console.error("Error deleting selected stores:", error);
         }
     };
 
     const handleSelectStore = (storeId) => {
-        setSelectedStores(prevSelectedStores => 
-            prevSelectedStores.includes(storeId)
-                ? prevSelectedStores.filter(id => id !== storeId)
-                : [...prevSelectedStores, storeId]
+        setSelectedStores(prev => 
+            prev.includes(storeId)
+                ? prev.filter(id => id !== storeId)
+                : [...prev, storeId]
         );
     };
 
     const handleSelectAll = (e) => {
-        if (e.target.checked) {
-            setSelectedStores(stores.map(store => store.id));
-        } else {
-            setSelectedStores([]);
-        }
+        setSelectedStores(
+            e.target.checked ? stores.map(store => store.id) : []
+        );
     };
 
     const filteredStores = stores.filter(store => 
-        store.store_name.toLowerCase().includes(searchTerm.toLowerCase())  // Filter stores based on search term
+        store.store_name?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
-        <div className="min-h-full bg-white text-center">
-            <h1 className="text-2xl font-bold mb-4">Manage Stores</h1>
-
-            <div className="table-actions flex justify-between">
-                <div className="flex">
-                    <button
+        <div className="container mx-auto px-4 py-8">
+            <div className="flex justify-between items-center mb-6">
+                <h1 className="text-3xl font-bold text-gray-800">Manage Stores</h1>
+                <div className="flex items-center space-x-4">
+                    <button 
                         onClick={() => {
-                            setEditingStore(null);  // Clear any existing store being edited
-                            setIsModalOpen(true);  // Open modal for adding store
+                            setEditingStore(null);
+                            setIsModalOpen(true);
                         }}
-                        className="mb-4 bg-success text-white p-2 rounded"
+                        className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md flex items-center"
                     >
-                        <AddBusinessIcon />
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                            <path fillRule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clipRule="evenodd" />
+                        </svg>
+                        Add Store
                     </button>
 
-                    <div className="checkbox-group mb-4 pl-3 flex text-center space-x-3">
-                        <label>
-                            <input
-                                type="checkbox"
-                                checked={stores.length > 0 && selectedStores.length === stores.length}  // Check if all stores are selected
-                                onChange={handleSelectAll}
-                            />
-                        </label>
-                        {selectedStores.length > 0 && (
-                            <button
-                                onClick={handleDeleteSelectedStores}
-                                className="ml-4 bg-danger text-white px-4 py-2 rounded"
-                            >
-                                Delete {selectedStores.length} Selected
-                            </button>
-                        )}
-                    </div>
-                </div>
-
-                {/* Search Bar */}
-                <div className="flex items-center border rounded p-2 ml-4">
-                    <SearchIcon className="text-dark mr-2" />
-                    <input
-                        type="text"
-                        placeholder="Search stores"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}  // Update search term
-                        className="outline-none"
-                    />
+                    {selectedStores.length > 0 && (
+                        <button 
+                            onClick={handleDeleteSelectedStores}
+                            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md"
+                        >
+                            Delete {selectedStores.length} Selected
+                        </button>
+                    )}
                 </div>
             </div>
 
-            {/* Store list */}
-            <table className="min-w-full border">
-                <thead>
-                    <tr>
-                        <th className="border">Store Name</th>
-                        <th className="border">Location</th>
-                        <th className="border">Description</th>
-                        <th className="border">Date Added</th>
-                        <th className="border">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {filteredStores.length > 0 ? (
-                        filteredStores.map((store) => (
-                            <tr key={store.id}>
-                                <td className="border">
-                                    <div className="flex justify-start px-2">
-                                        <input
-                                            type="checkbox"
-                                            checked={selectedStores.includes(store.id)}  // Check if store is selected
-                                            onChange={() => handleSelectStore(store.id)}  // Handle individual store selection
-                                        />
-                                        <div className="pl-3">
+            <div className="mb-4 flex justify-between items-center">
+                <div className="flex items-center space-x-2">
+                    <input 
+                        type="checkbox"
+                        checked={stores.length > 0 && selectedStores.length === stores.length}
+                        onChange={handleSelectAll}
+                        className="form-checkbox"
+                    />
+                    <span className="text-gray-600">Select All</span>
+                </div>
+
+                <div className="relative">
+                    <input 
+                        type="text"
+                        placeholder="Search stores"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="pl-8 pr-4 py-2 border rounded-md w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <svg 
+                        xmlns="http://www.w3.org/2000/svg" 
+                        className="h-5 w-5 absolute left-2 top-3 text-gray-400" 
+                        viewBox="0 0 20 20" 
+                        fill="currentColor"
+                    >
+                        <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                    </svg>
+                </div>
+            </div>
+
+            <div className="bg-white shadow overflow-hidden rounded-lg">
+                <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-white-light">
+                        <tr>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-dark uppercase tracking-wider">Store Name</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-dark uppercase tracking-wider">Location</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-dark uppercase tracking-wider">Description</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-dark uppercase tracking-wider">Date Added</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-dark uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                        {filteredStores.length > 0 ? (
+                            filteredStores.map((store) => (
+                                <tr key={store.id} className="hover:bg-light">
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        <div className="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedStores.includes(store.id)}
+                                                onChange={() => handleSelectStore(store.id)}
+                                                className="mr-3"
+                                            />
                                             {store.store_name}
                                         </div>
-                                    </div>
-                                </td>
-                                <td className="border">{store.location}</td>
-                                <td className="border">{store.description}</td>
-                                <td className="border">{new Date(store.createdAt?.seconds * 1000).toLocaleDateString()}</td> {/* Format the timestamp */}
-                                <td className="border">
-                                    <button
-                                        onClick={() => handleEditStore(store)}
-                                        className="bg-info text-white px-2 py-1 rounded mr-2"
-                                    >
-                                        <EditIcon />
-                                    </button>
-                                    <button
-                                        onClick={() => handleDeleteStore(store.id)}
-                                        className="bg-danger text-white px-2 py-1 rounded"
-                                    >
-                                        <DeleteIcon />
-                                    </button>
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap">{store.location}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap">{store.description}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap">
+                                        {store.createdAt 
+                                            ? new Date(store.createdAt.seconds * 1000).toLocaleDateString('en-US', {
+                                                year: 'numeric',
+                                                month: 'long',
+                                                day: 'numeric'
+                                            }) 
+                                            : 'N/A'}
+                                    </td>
+                                    <td className="px-6 py-4 whitespace-nowrap space-x-2">
+                                        <button 
+                                            onClick={() => handleEditStore(store)}
+                                            className="text-blue-600 hover:text-blue-900"
+                                        >
+                                            Edit
+                                        </button>
+                                        <button 
+                                            onClick={() => handleDeleteStore(store.id)}
+                                            className="text-red-600 hover:text-red-900"
+                                        >
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            <tr>
+                                <td colSpan="5" className="px-6 py-4 text-center text-gray-500">
+                                    No stores found
                                 </td>
                             </tr>
-                        ))
-                    ) : (
-                        <tr>
-                            <td colSpan="5" className="text-center py-4">No stores found.</td>
-                        </tr>
-                    )}
-                </tbody>
-            </table>
+                        )}
+                    </tbody>
+                </table>
+            </div>
 
-            {/* Add Store Modal */}
             <AddStoreModal
                 isOpen={isModalOpen}
-                onClose={() => {
-                    setIsModalOpen(false);
-                    setEditingStore(null);  // Clear editing store when closing modal
-                }}
+                onClose={() => setIsModalOpen(false)}
                 onAddStore={handleAddStore}
-                editingStore={editingStore}  // Pass the store being edited
-                setStores={setStores}
+                onUpdateStore={handleUpdateStore}
+                store={editingStore}
+                stores={stores}
             />
         </div>
     );

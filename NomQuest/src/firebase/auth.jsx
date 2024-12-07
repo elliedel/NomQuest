@@ -1,4 +1,6 @@
 import { auth, db } from "./firebaseConfig";
+import { getAnalytics, logEvent } from "firebase/analytics";
+
 import { 
     createUserWithEmailAndPassword,
     sendEmailVerification,
@@ -9,6 +11,7 @@ import {
     GoogleAuthProvider
 } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
+const analytics = getAnalytics();
 
 export const createUser = async (email, password) => {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -24,6 +27,13 @@ export const createUser = async (email, password) => {
         name: user.displayName,
         isAdmin: false, // For regular users
         createdAt: new Date(),
+    });
+
+    // Log user registration event in Firebase Analytics
+    logEvent(analytics, "sign_up", {
+        method: "Email", // Registration method
+        user_id: user.uid,
+        email: user.email,
     });
 
     return userCredential;
@@ -50,6 +60,12 @@ export const signInWithGoogle = async () => {
             email: user.email,
             isAdmin: false, // For regular users
             createdAt: new Date(),
+        });
+
+        logEvent(analytics, "sign_up", {
+            method: "Google",
+            user_id: user.uid,
+            email: user.email,
         });
         return { user, isAdmin: false }; // new user, not admin
     } else {
